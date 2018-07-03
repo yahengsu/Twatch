@@ -1,0 +1,14 @@
+{
+  "name": "twatch",
+  "version": "1.0.0",
+  "description": "Twitch Chatbot",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "YaHeng Su",
+  "license": "ISC",
+  "dependencies": {
+    "tmi.js": "^1.2.1"
+  }
+}
