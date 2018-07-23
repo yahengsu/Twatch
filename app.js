@@ -1,4 +1,6 @@
 var tmi = require("tmi.js");
+var fs = require('fs');
+let fileName = 'temp.txt';
 
 var options = {
     options: {
@@ -30,6 +32,16 @@ var totalChatMessages = 0;
 
 var chatMessagesRaw = [];
 
+fs.readFile(fileName, function(err, buf) {
+    console.log(buf.toString());
+  });
+
+  var data = "New File Contents";
+
+fs.writeFile('temp.txt', data, function(err, data){
+    if (err) console.log(err);
+    console.log("Successfully Written to File.");
+});
 
 setInterval(getAverage, 8000);
 
