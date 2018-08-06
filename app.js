@@ -1,8 +1,8 @@
 var tmi = require("tmi.js");
 var fs = require('fs');
 var constants = require('./constants.js')
-let fileName = 'temp.txt';
-
+let fileName = 'temp';
+let fileNameConst = 1;
 var options = {
     options: {
         debug: true
@@ -34,16 +34,10 @@ var totalChatMessages = 0;
 var chatMessagesRaw = [];
 var newUsers = [];
 
-fs.readFile(fileName, function(err, buf) {
-    console.log(buf.toString());
-  });
 
-  var data = "New File Contents";
+var data = "New File Contents";
 
-fs.writeFile('temp.txt', data, function(err, data){
-    if (err) console.log(err);
-    console.log("Successfully Written to File.");
-});
+
 
 setInterval(getAverage, 8000);
 
@@ -58,10 +52,12 @@ function getAverage() {
     }
     intervalMessages = 0;
 }
-var intervalLog = setInterval( () => {
+setInterval( () => {
     console.log("prevAvg: " + previousAverage + " currAvg: " + currentAverage + " maxAvg: " + maxAverage);
     console.log("totalMsgs: " + totalChatMessages + " uniqueMsgs: " + uniqueChatMessages);
     console.log("NEW JOINS" + newUsers);
+    //writeToFile(fileName + fileNameConst + ".txt", chatMessagesRaw)
+    // fileNameConst++;
 }, 8000);
 
 
@@ -100,9 +96,6 @@ client.on("disconnected", (reason) => {
     // Do your stuff.
 });
 
-client.on("join", function (channel, username, self) {
-    console.log(username + "has joined the channel.")
-});
 function emoteGraph() {
     //
 }
@@ -124,4 +117,11 @@ function onChat() {
 
 function isUniqueMessage() {
 
+}
+
+function writeToFile(fileName, data) {
+    fs.writeFile(fileName, data, function(err){
+        if (err) console.log(err);
+        console.log("Successfully Written to File.");
+    });
 }
