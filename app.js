@@ -1,6 +1,6 @@
 var tmi = require("tmi.js");
 var fs = require('fs');
-const config = require('./config.js')
+var config = require('./config.js')
 let fileName = 'temp.txt';
 
 var options = {
@@ -11,10 +11,10 @@ var options = {
         reconnect: true
     },
     identity: {
-        username: "yasungBot",
-        password: "oauth:pfoa7y2gdrq927a56k01imcwrb3z7f"
+        username: config.username,
+        password: config.password
     },
-    channels: ["#yoonah"]
+    channels: ["#boxbox"]
 };
 
 var client = new tmi.client(options);
@@ -22,6 +22,7 @@ var client = new tmi.client(options);
 var intervalMessages = 0;
 var delta = 0;
 
+console.log(config.unsername + " " + config.password);
 var previousAverage = 0;
 var currentAverage = 0;
 var maxAverage = 0;
@@ -113,6 +114,13 @@ function detectHotspot() {
     Surge in chat activity after good/bad play is made, can be useful for detecting highlights 
  */
     console.log("chat spike detected");
+}
+
+function onJoin() {
+
+}
+function onChat() {
+
 }
 
 function isUniqueMessage() {
