@@ -1,6 +1,6 @@
 var tmi = require("tmi.js");
 var fs = require('fs');
-var config = require('./config.js')
+var constants = require('./constants.js')
 let fileName = 'temp.txt';
 
 var options = {
@@ -11,8 +11,8 @@ var options = {
         reconnect: true
     },
     identity: {
-        username: config.username,
-        password: config.password
+        username: constants.username,
+        password: constants.password
     },
     channels: ["#boxbox"]
 };
@@ -22,7 +22,6 @@ var client = new tmi.client(options);
 var intervalMessages = 0;
 var delta = 0;
 
-console.log(config.unsername + " " + config.password);
 var previousAverage = 0;
 var currentAverage = 0;
 var maxAverage = 0;
