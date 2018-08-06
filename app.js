@@ -1,5 +1,6 @@
 var tmi = require("tmi.js");
 var fs = require('fs');
+const config = require('./config.js')
 let fileName = 'temp.txt';
 
 var options = {
@@ -13,7 +14,7 @@ var options = {
         username: "yasungBot",
         password: "oauth:pfoa7y2gdrq927a56k01imcwrb3z7f"
     },
-    channels: ["#imaqtpie"]
+    channels: ["#yoonah"]
 };
 
 var client = new tmi.client(options);
@@ -31,6 +32,7 @@ var uniqueChatMessages = 0;
 var totalChatMessages = 0;
 
 var chatMessagesRaw = [];
+var newUsers = [];
 
 fs.readFile(fileName, function(err, buf) {
     console.log(buf.toString());
@@ -59,6 +61,7 @@ function getAverage() {
 var intervalLog = setInterval( () => {
     console.log("prevAvg: " + previousAverage + " currAvg: " + currentAverage + " maxAvg: " + maxAverage);
     console.log("totalMsgs: " + totalChatMessages + " uniqueMsgs: " + uniqueChatMessages);
+    console.log("NEW JOINS" + newUsers);
 }, 8000);
 
 
@@ -71,9 +74,6 @@ client.on("chat", (channel, userstate, message, self) => {
     // Don't listen to my own messages..
     if (self) return;
     
-    if(message === "!help") {
-        client.action(channel, "I'm just a bot, sorry!");
-    }
     
     if (chatMessagesRaw.indexOf(message) > -1) {
         totalChatMessages++;
@@ -89,6 +89,7 @@ client.on("chat", (channel, userstate, message, self) => {
 client.on("join", (channel, username, self) => {
     // Do your stuff.
     console.log(username + "has joined the channel")
+    newUsers.push(username)
 });
 
 client.on("logon", () => {
@@ -99,7 +100,9 @@ client.on("disconnected", (reason) => {
     // Do your stuff.
 });
 
-
+client.on("join", function (channel, username, self) {
+    console.log(username + "has joined the channel.")
+});
 function emoteGraph() {
     //
 }
