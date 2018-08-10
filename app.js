@@ -14,7 +14,7 @@ var options = {
         username: constants.username,
         password: constants.password
     },
-    channels: ["#boxbox"]
+    channels: constants.channels
 };
 
 var client = new tmi.client(options);
@@ -22,43 +22,44 @@ var client = new tmi.client(options);
 var intervalMessages = 0;
 var delta = 0;
 
-var previousAverage = 0;
-var currentAverage = 0;
-var maxAverage = 0;
-
-var spikeConstant = 2.3;
+let spikeConstant = 2.5;
 
 var uniqueChatMessages = 0;
 var totalChatMessages = 0;
 
+
 var chatMessagesRaw = [];
 var newUsers = [];
-
-
 var data = "New File Contents";
 
-
+var chatMsgs = {};
 
 setInterval(getAverage, 8000);
+setInterval(debugLog, 8000);
+
+var prevAvg = 0;
+var currAvg = 0;
+var maxAvg = 0;
 
 function getAverage() {
-    previousAverage = currentAverage;
-    currentAverage = intervalMessages/5;
-    if(currentAverage > maxAverage) {
-        maxAverage = currentAverage;
+    prevAvg = currAvg;
+    currAvg = intervalMessages/5;
+    if(currAvg > maxAvg) {
+        maxAvg = currAvg;
     }
-    if((currentAverage/spikeConstant) > previousAverage) {
-        detectHotspot();
+    if((currAvg/spikeConstant) > prevAvg) {
+        handleHotspot();
     }
     intervalMessages = 0;
 }
-setInterval( () => {
-    console.log("prevAvg: " + previousAverage + " currAvg: " + currentAverage + " maxAvg: " + maxAverage);
+
+
+function debugLog() {
+    console.log("prevAvg: " + prevAvg + " currAvg: " + currAvg + " maxAvg: " + maxAvg);
     console.log("totalMsgs: " + totalChatMessages + " uniqueMsgs: " + uniqueChatMessages);
-    console.log("NEW JOINS" + newUsers);
     //writeToFile(fileName + fileNameConst + ".txt", chatMessagesRaw)
     // fileNameConst++;
-}, 8000);
+}
 
 
 //trimmed mean = take middle 80% values and forget about top/bottom 10%
@@ -66,11 +67,17 @@ setInterval( () => {
 // Connect the client to the server..
 client.connect();
 
-client.on("chat", (channel, userstate, message, self) => {
-    // Don't listen to my own messages..
+client.on("chat", onChatHandler);
+
+function onChatHandler(channel, userstate, message,self) {
     if (self) return;
-    
-    
+
+    if(chatMsgs.hasOwnProperty(message)) {
+        chatMsgs[message] += 1;
+    }
+    else {
+        chatMsgs[message] = 0 ?  chatMsgs[message] = 1 : chatMsgs[message] += 1;
+    }
     if (chatMessagesRaw.indexOf(message) > -1) {
         totalChatMessages++;
     }
@@ -80,13 +87,13 @@ client.on("chat", (channel, userstate, message, self) => {
         chatMessagesRaw.push(message)
     }
     intervalMessages++;
-});
+} 
 
-client.on("join", (channel, username, self) => {
-    // Do your stuff.
-    console.log(username + "has joined the channel")
+client.on("join", onJoinHandler);
+
+function onJoinHandler(channel, username, self) {
     newUsers.push(username)
-});
+}
 
 client.on("logon", () => {
     // Do your stuff.
@@ -97,27 +104,13 @@ client.on("disconnected", (reason) => {
 });
 
 function emoteGraph() {
-    //
+    
 }
 
-function detectHotspot() {
- /*
-    Determine real time chat hotspots
-    Surge in chat activity after good/bad play is made, can be useful for detecting highlights 
- */
+function handleHotspot() {
     console.log("chat spike detected");
 }
 
-function onJoin() {
-
-}
-function onChat() {
-
-}
-
-function isUniqueMessage() {
-
-}
 
 function writeToFile(fileName, data) {
     fs.writeFile(fileName, data, function(err){
