@@ -10,6 +10,8 @@
   "license": "ISC",
   "dependencies": {
     "plotly.js-dist": "^1.39.2",
+    "request": "^2.88.0",
+    "request-promise-native": "^1.0.5",
     "tmi.js": "^1.2.1"
   }
 }

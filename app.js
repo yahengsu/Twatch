@@ -1,6 +1,7 @@
 var tmi = require("tmi.js");
 var fs = require('fs');
-var constants = require('./constants.js')
+var constants = require('./constants.js');
+var requests = require("./requests.js");
 let fileName = 'temp';
 let fileNameConst = 1;
 var options = {
@@ -35,7 +36,7 @@ var data = "New File Contents";
 var chatMsgs = {};
 
 setInterval(getAverage, 8000);
-setInterval(debugLog, 8000);
+setInterval(debugLog, 600000);
 
 var prevAvg = 0;
 var currAvg = 0;
@@ -62,6 +63,7 @@ function debugLog() {
 }
 
 
+
 //trimmed mean = take middle 80% values and forget about top/bottom 10%
 
 // Connect the client to the server..
@@ -71,7 +73,18 @@ client.on("chat", onChatHandler);
 
 function onChatHandler(channel, userstate, message,self) {
     if (self) return;
-
+    
+    if(message === "#followage") {
+       requests.followage(channel, userstate, (res) => {
+           if(res.total < 1) {
+               client.say(channel, userstate.username + " is not following " + channel + "!");
+           }
+           else if (res.total >= 1) {
+               console.log(res.data[0].followed_at);
+               client.say(channel, userstate.username + " has been following " + channel + " for " + res.data[0].followed_at + "!");
+           }
+       })
+    }
     if(chatMsgs.hasOwnProperty(message)) {
         chatMsgs[message] += 1;
     }
@@ -87,11 +100,17 @@ function onChatHandler(channel, userstate, message,self) {
         chatMessagesRaw.push(message)
     }
     intervalMessages++;
+    // console.log(chatMsgs);
 } 
+
+function followageCommand(channel, username) {
+
+}
 
 client.on("join", onJoinHandler);
 
 function onJoinHandler(channel, username, self) {
+    
     newUsers.push(username)
 }
 
@@ -100,7 +119,7 @@ client.on("logon", () => {
 });
 
 client.on("disconnected", (reason) => {
-    // Do your stuff.
+   console.log("Disconnected: ${reason}");
 });
 
 function emoteGraph() {
