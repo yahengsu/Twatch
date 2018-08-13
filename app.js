@@ -1,9 +1,12 @@
 var tmi = require("tmi.js");
 var fs = require('fs');
+
 var constants = require('./constants.js');
 var requests = require("./requests.js");
+
 let fileName = 'temp';
 let fileNameConst = 1;
+
 var options = {
     options: {
         debug: true
@@ -75,15 +78,10 @@ function onChatHandler(channel, userstate, message,self) {
     if (self) return;
     
     if(message === "#followage") {
-       requests.followage(channel, userstate, (res) => {
-           if(res.total < 1) {
-               client.say(channel, userstate.username + " is not following " + channel + "!");
-           }
-           else if (res.total >= 1) {
-               console.log(res.data[0].followed_at);
-               client.say(channel, userstate.username + " has been following " + channel + " for " + res.data[0].followed_at + "!");
-           }
-       })
+      followageDateHandler(channel, userstate);
+    }
+    if(message === "#uptime") {
+
     }
     if(chatMsgs.hasOwnProperty(message)) {
         chatMsgs[message] += 1;
@@ -103,8 +101,22 @@ function onChatHandler(channel, userstate, message,self) {
     // console.log(chatMsgs);
 } 
 
-function followageCommand(channel, username) {
-
+function followageDateHandler(channel, userstate) {
+    requests.followage(channel, userstate, (res) => {
+        if(res.total < 1) {
+            client.say(channel, userstate.username + " is not following " + channel + "!");
+        }
+        else if (res.total == 1) {
+            var followDate = new Date(res.data[0].followed_at);
+            var currentDate = new Date();
+            var difference = (currentDate.getTime() - followDate.getTime()) / 1000; //difference in date in seconds
+            var days = difference/60/60/24;
+            var daysFloored = Math.floor(days);
+            var hours = Math.round((days - daysFloored) * 24);
+            client.say(channel, userstate.username + " has been following " + channel + " for " + daysFloored + " days and " + hours + " hours!");
+        }
+    })
+    
 }
 
 client.on("join", onJoinHandler);

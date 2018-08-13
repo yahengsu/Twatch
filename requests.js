@@ -12,7 +12,7 @@ function followage(channel, user, resp) {
         var channelID = res.data[0].id;
         var fromID = user["user-id"];
         var baseURL = "https://api.twitch.tv/helix/users/follows";
-        var param = "?from_id=" + fromID + "&?to_id=" + channelID;
+        var param = "?from_id=" + fromID + "&to_id=" + channelID;
         var totalURL = baseURL + param;
         var options = {
             uri: totalURL,
@@ -30,6 +30,13 @@ function followage(channel, user, resp) {
             })
         });
     
+
+}
+
+function uptime(channel, user, resp) {
+    var channelName = channel.substring(1);
+
+    var baseURL = "https://api.twitch.tv/helix/streams";
 
 }
 
