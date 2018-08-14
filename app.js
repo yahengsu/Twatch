@@ -154,10 +154,17 @@ function streamTitleHandler(channel, userstate) {
     });
 }
 
+
+/*https://tmi.twitch.tv/group/user/USERNAME/chatters
+    For getting average viewer looktime 
+    if user is in object and not in whitelist, add minute to their time every minute 
+    if user is not in object, then add them to object with initial value of 0 
+    
+*/
 client.on("join", onJoinHandler);
 
 function onJoinHandler(channel, username, self) {
-    
+    console.log(username + " has joined the channel");
     newUsers.push(username)
 }
 
