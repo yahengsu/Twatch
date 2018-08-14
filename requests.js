@@ -4,7 +4,8 @@ var constants = require("./constants.js");
 module.exports = {
     followage: followage,
     getIDByUsername: getIDByUsername,
-    uptime: uptime
+    uptime: uptime,
+    streamTitle: streamTitle
 };
 
 function followage(channel, user, resp) {
@@ -51,9 +52,26 @@ function uptime(channel, resp) {
         .catch((err) => {
             console.log(err);
         })
-
 }
 
+function streamTitle(channel, resp) {
+    var channelName = channel.substring(1);
+    var baseURL = "https://api.twitch.tv/helix/streams";
+    var param = "?user_login=" + channelName;
+    var totalURL = baseURL + param;
+    var options = {
+        uri: totalURL,
+        headers: {
+            "Client-ID" : constants.ClientID
+        },
+        json: true
+    };
+    rp(options)
+        .then(resp)
+        .catch((err) => {
+            console.log(err);
+        })
+}
 function getIDByUsername(username, res) {
     var baseURL = "https://api.twitch.tv/helix/users";
     var param = "?login=" + username;

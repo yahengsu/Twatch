@@ -77,10 +77,16 @@ function onChatHandler(channel, userstate, message,self) {
     if (self) return;
     
     if(message === "#followage") {
-      followageDateHandler(channel, userstate);
+        followageDateHandler(channel, userstate);
     }
     if(message === "#uptime") {
         uptimeHandler(channel, userstate);
+    }
+    if(message === "#title") {
+        streamTitleHandler(channel, userstate);
+    }
+    if(message === "#blackfr0st" && channel === "#yasung") {
+        client.say(channel, "https://imgur.com/0I3W6fQ");
     }
     if(chatMsgs.hasOwnProperty(message)) {
         chatMsgs[message] += 1;
@@ -93,9 +99,10 @@ function onChatHandler(channel, userstate, message,self) {
 } 
 
 function followageDateHandler(channel, userstate) {
+    var prefix = "@" + userstate.username + ", ";
     requests.followage(channel, userstate, (res) => {
         if(res.total < 1) {
-            client.say(channel, "@" + userstate.username + ", " + userstate.username + " is not following " + channel.substring(1) + "!");
+            client.say(channel, prefix + userstate.username + " is not following " + channel.substring(1) + "!");
         }
         else if (res.total == 1) {
             var followDate = new Date(res.data[0].followed_at);
@@ -104,22 +111,39 @@ function followageDateHandler(channel, userstate) {
             var days = difference/60/60/24;
             var daysFloored = Math.floor(days);
             var hours = Math.round((days - daysFloored) * 24);
-            client.say(channel, "@" + userstate.username + ", " + userstate.username + " has been following " + channel.substring(1) + " for " + daysFloored + " days and " + hours + " hours!");
+            client.say(channel, prefix + userstate.username + " has been following " + channel.substring(1) + " for " + daysFloored + " days and " + hours + " hours!");
         }
     });
     
 }
 
-function uptimeHandler(channel, userstate) {
+function uptimeHandler(channel) {
+    var prefix = "@" + userstate.username + ", ";
     requests.uptime(channel, (res) => {
-        if(res.data[0].type === "live") {
+        if(res.data === undefined || res.data.length == 0) {
+            client.say(channel, prefix + channel.substring(1) + " is not live!");
+        }
+        else if(res.data[0].type === "live") {
             var startTime = new Date(res.data[0].started_at);
             var currentDate = new Date();
             var difference = (currentDate.getTime() - startTime.getTime()) / 1000;
             var hours = difference /60/60;
             var hoursFloored = Math.floor(hours);
             var minutes = Math.round((hours - hoursFloored) * 60);
-            client.say(channel, "@" + userstate.username + ", " + channel.substring(1) + " has been streaming for " + hoursFloored + " hours and " + minutes + " minutes!");
+            client.say(channel, prefix + channel.substring(1) + " has been streaming for " + hoursFloored + " hours and " + minutes + " minutes!");
+        }
+    });
+}
+
+function streamTitleHandler(channel, userstate) {
+    var prefix = "@" + userstate.username + ", ";
+    requests.streamTitle(channel, (res) => {
+        if(res.data === undefined || res.data.length == 0) {
+            client.say(channel, prefix + channel.substring(1) + " is not live!");
+        }
+        else if(res.data[0].type === "live") {
+            var title = res.data[0].title;
+            client.say(channel, prefix + "Current Stream Title: " + title);
         }
     });
 }
