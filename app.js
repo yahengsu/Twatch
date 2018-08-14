@@ -34,7 +34,7 @@ var totalChatMessages = 0;
 var chatMessagesRaw = [];
 var newUsers = [];
 
-var chatMsgs = {};
+var chatMsgs = [];
 
 setInterval(getAverage, 8000);
 setInterval(debugLog, 8000);
@@ -75,7 +75,7 @@ client.on("chat", onChatHandler);
 
 function onChatHandler(channel, userstate, message,self) {
     if (self) return;
-    
+  
     if(message === "#followage") {
         followageDateHandler(channel, userstate);
     }
@@ -88,7 +88,13 @@ function onChatHandler(channel, userstate, message,self) {
     if(message === "#blackfr0st" && channel === "#yasung") {
         client.say(channel, "https://imgur.com/0I3W6fQ");
     }
-    if(chatMsgs.hasOwnProperty(message)) {
+
+    chatMsgs.forEach((element) => {
+        if (element.message == message) {
+            element.count++;
+        }
+    });
+    if(chatMsgs.includes()) {
         chatMsgs[message] += 1;
     }
     else {
