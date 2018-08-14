@@ -1,8 +1,8 @@
 var tmi = require("tmi.js");
 var fs = require('fs');
-
 var constants = require('./constants.js');
 var requests = require("./requests.js");
+var plotly = require("plotly")(constants.plotlyUser, constants.plotlyKey);
 
 let fileName = 'temp';
 let fileNameConst = 1;
@@ -24,7 +24,6 @@ var options = {
 var client = new tmi.client(options);
 
 var intervalMessages = 0;
-var delta = 0;
 
 let spikeConstant = 2.5;
 
@@ -34,12 +33,11 @@ var totalChatMessages = 0;
 
 var chatMessagesRaw = [];
 var newUsers = [];
-var data = "New File Contents";
 
 var chatMsgs = {};
 
 setInterval(getAverage, 8000);
-setInterval(debugLog, 600000);
+setInterval(debugLog, 8000);
 
 var prevAvg = 0;
 var currAvg = 0;
@@ -61,6 +59,7 @@ function getAverage() {
 function debugLog() {
     console.log("prevAvg: " + prevAvg + " currAvg: " + currAvg + " maxAvg: " + maxAvg);
     console.log("totalMsgs: " + totalChatMessages + " uniqueMsgs: " + uniqueChatMessages);
+    console.log(chatMsgs);
     //writeToFile(fileName + fileNameConst + ".txt", chatMessagesRaw)
     // fileNameConst++;
 }
@@ -81,30 +80,22 @@ function onChatHandler(channel, userstate, message,self) {
       followageDateHandler(channel, userstate);
     }
     if(message === "#uptime") {
-
+        uptimeHandler(channel, userstate);
     }
     if(chatMsgs.hasOwnProperty(message)) {
         chatMsgs[message] += 1;
     }
     else {
-        chatMsgs[message] = 0 ?  chatMsgs[message] = 1 : chatMsgs[message] += 1;
-    }
-    if (chatMessagesRaw.indexOf(message) > -1) {
-        totalChatMessages++;
-    }
-    else {
-        uniqueChatMessages++;
-        totalChatMessages++;
-        chatMessagesRaw.push(message)
+       chatMsgs[message] = 1;
+       uniqueChatMessages++;
     }
     intervalMessages++;
-    // console.log(chatMsgs);
 } 
 
 function followageDateHandler(channel, userstate) {
     requests.followage(channel, userstate, (res) => {
         if(res.total < 1) {
-            client.say(channel, userstate.username + " is not following " + channel + "!");
+            client.say(channel, "@" + userstate.username + ", " + userstate.username + " is not following " + channel.substring(1) + "!");
         }
         else if (res.total == 1) {
             var followDate = new Date(res.data[0].followed_at);
@@ -113,10 +104,24 @@ function followageDateHandler(channel, userstate) {
             var days = difference/60/60/24;
             var daysFloored = Math.floor(days);
             var hours = Math.round((days - daysFloored) * 24);
-            client.say(channel, userstate.username + " has been following " + channel + " for " + daysFloored + " days and " + hours + " hours!");
+            client.say(channel, "@" + userstate.username + ", " + userstate.username + " has been following " + channel.substring(1) + " for " + daysFloored + " days and " + hours + " hours!");
         }
-    })
+    });
     
+}
+
+function uptimeHandler(channel, userstate) {
+    requests.uptime(channel, (res) => {
+        if(res.data[0].type === "live") {
+            var startTime = new Date(res.data[0].started_at);
+            var currentDate = new Date();
+            var difference = (currentDate.getTime() - startTime.getTime()) / 1000;
+            var hours = difference /60/60;
+            var hoursFloored = Math.floor(hours);
+            var minutes = Math.round((hours - hoursFloored) * 60);
+            client.say(channel, "@" + userstate.username + ", " + channel.substring(1) + " has been streaming for " + hoursFloored + " hours and " + minutes + " minutes!");
+        }
+    });
 }
 
 client.on("join", onJoinHandler);
@@ -139,6 +144,7 @@ function emoteGraph() {
 }
 
 function handleHotspot() {
+    //plot to graph
     console.log("chat spike detected");
 }
 

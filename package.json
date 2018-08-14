@@ -9,6 +9,7 @@
   "author": "YaHeng Su",
   "license": "ISC",
   "dependencies": {
+    "plotly": "^1.0.6",
     "plotly.js-dist": "^1.39.2",
     "request": "^2.88.0",
     "request-promise-native": "^1.0.5",
