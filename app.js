@@ -23,21 +23,26 @@ var options = {
 
 var client = new tmi.client(options);
 
-var intervalMessages = 0;
+var avgViewerTime = 0;
+var channelViewers = {};
+var totalTime = 0;
+var totalViewers = 0;
 
+var intervalMessages = 0;
 let spikeConstant = 2.5;
+const viewerInterval = 10000;
+const debugInterval = 10000;
 
 var uniqueChatMessages = 0;
 var totalChatMessages = 0;
 
-
-var chatMessagesRaw = [];
 var newUsers = [];
 
 var chatMsgs = [];
-
+var chatMsgsFrequency = [];
 setInterval(getAverage, 8000);
-setInterval(debugLog, 8000);
+setInterval(debugLog, debugInterval);
+setInterval(averageViewerTime, viewerInterval);
 
 var prevAvg = 0;
 var currAvg = 0;
@@ -88,7 +93,18 @@ function onChatHandler(channel, userstate, message,self) {
     if(message === "#blackfr0st" && channel === "#yasung") {
         client.say(channel, "https://imgur.com/0I3W6fQ");
     }
+    if(message === "#copypasta") {
+        //copypastasHandler()
+    }
+    if(message === "#emotes") {
+        //topEmotesHandler()
+    }
+    if(message === "#opgg") {
 
+    }
+    if(message === "#viewer") {
+        averageViewerTime(channel, userstate);
+    }
     chatMsgs.forEach((element) => {
         if (element.message == message) {
             element.count++;
@@ -123,7 +139,7 @@ function followageDateHandler(channel, userstate) {
     
 }
 
-function uptimeHandler(channel) {
+function uptimeHandler(channel, userstate) {
     var prefix = "@" + userstate.username + ", ";
     requests.uptime(channel, (res) => {
         if(res.data === undefined || res.data.length == 0) {
@@ -155,16 +171,11 @@ function streamTitleHandler(channel, userstate) {
 }
 
 
-/*https://tmi.twitch.tv/group/user/USERNAME/chatters
-    For getting average viewer looktime 
-    if user is in object and not in whitelist, add minute to their time every minute 
-    if user is not in object, then add them to object with initial value of 0 
-    
-*/
+
 client.on("join", onJoinHandler);
 
 function onJoinHandler(channel, username, self) {
-    console.log(username + " has joined the channel");
+    console.log(`${username} has joined the channel`);
     newUsers.push(username)
 }
 
@@ -173,7 +184,7 @@ client.on("logon", () => {
 });
 
 client.on("disconnected", (reason) => {
-   console.log("Disconnected: ${reason}");
+   console.log(`Disconnected: ${reason}`);
 });
 
 function emoteGraph() {
@@ -183,6 +194,43 @@ function emoteGraph() {
 function handleHotspot() {
     //plot to graph
     console.log("chat spike detected");
+}
+
+
+/*https://tmi.twitch.tv/group/user/USERNAME/chatters
+    For getting average viewer looktime 
+    if user is in object and not in whitelist, add minute to their time every minute 
+    if user is not in object, then add them to object with initial value of 0 
+    if object,hasOwnProperty(username)
+        object.username += 0.1
+        total viewer watch time / viewers
+        plot graph over time 
+*/
+
+function averageViewerTime() {
+    var channel  = "#imaqtpie";
+    // channels.forEach(channel => { // iterate through channels array 
+        requests.getViewerList(channel, (res) => {
+            var viewerList = res.chatters.viewers; //get viewerlist
+            viewerList.forEach((viewer) => {
+                if(channelViewers.hasOwnProperty(viewer)) {
+                    channelViewers[viewer] += (viewerInterval/1000); //add seconds 
+                }
+                else {
+                    channelViewers[viewer] = 0; 
+                }
+            });
+            console.log(channelViewers);
+            console.log(Object.keys(channelViewers).length);
+            Object.keys(channelViewers).forEach((val) => {
+                let viewerTime = Number(channelViewers.key);
+                totalTime += viewerTime;
+            });
+            console.log(totalTime);
+            avgViewerTime = totalTime/totalViewers;
+            console.log(`Average Viewer Time (s) : ${avgViewerTime}`);
+        });
+    // });
 }
 
 

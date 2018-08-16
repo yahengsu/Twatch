@@ -5,7 +5,8 @@ module.exports = {
     followage: followage,
     getIDByUsername: getIDByUsername,
     uptime: uptime,
-    streamTitle: streamTitle
+    streamTitle: streamTitle,
+    getViewerList: getViewerList
 };
 
 function followage(channel, user, resp) {
@@ -51,7 +52,7 @@ function uptime(channel, resp) {
         .then(resp)
         .catch((err) => {
             console.log(err);
-        })
+        });
 }
 
 function streamTitle(channel, resp) {
@@ -70,7 +71,7 @@ function streamTitle(channel, resp) {
         .then(resp)
         .catch((err) => {
             console.log(err);
-        })
+        });
 }
 function getIDByUsername(username, res) {
     var baseURL = "https://api.twitch.tv/helix/users";
@@ -87,5 +88,19 @@ function getIDByUsername(username, res) {
         .then(res)
         .catch((err) => {
             console.log(err);
-        })
+        });
+}
+
+function getViewerList(channel, res) {
+    var channelName = channel.substring(1);
+    var url = `https://tmi.twitch.tv/group/user/${channelName}/chatters`;
+    var options = {
+        uri: url,
+        json: true
+    }
+    rp(options)
+        .then(res)
+        .catch((err) => {
+            console.log(err);
+        });
 }
