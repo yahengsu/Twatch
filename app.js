@@ -221,18 +221,20 @@ function averageViewerTime() {
                 }
             });
             console.log(channelViewers);
+            let totalViewers = Object.keys(channelViewers).length;
             console.log(Object.keys(channelViewers).length);
-            Object.keys(channelViewers).forEach((val) => {
-                let viewerTime = Number(channelViewers.key);
-                totalTime += viewerTime;
+            Object.keys(channelViewers).forEach((key) => {
+                totalTime += Number(channelViewers[key]);
             });
             console.log(totalTime);
-            avgViewerTime = totalTime/totalViewers;
+            if(totalTime !== 0) {
+                avgViewerTime = Number(totalTime/totalViewers);
+                console.log(avgViewerTime);
+            }
             console.log(`Average Viewer Time (s) : ${avgViewerTime}`);
         });
     // });
 }
-
 
 function writeToFile(fileName, data) {
     fs.writeFile(fileName, data, function(err){
