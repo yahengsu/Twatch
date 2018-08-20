@@ -6,15 +6,16 @@ var plotly = require("plotly")(constants.plotlyUser, constants.plotlyKey);
 
 const express = require('express');
 const app = express();
-app.listen(3000);
+const port = process.env.PORT || 5000;
+app.listen(port, () => console.log(`Listening on port ${port}`));
+
 app.get('/', (req, res) => {
     res.send('Hello World!');
     res.render('../views/App');
 });
-app.post('/', function (req, res) {
-    res.send('Got a POST request');
-});
-
+app.get('/api/hello', (req, res) => {
+    res.send({ express: 'Hello From Express' });
+  });
 
 let fileName = 'temp';
 let fileNameConst = 1;
