@@ -4,6 +4,18 @@ var constants = require('./constants.js');
 var requests = require("./requests.js");
 var plotly = require("plotly")(constants.plotlyUser, constants.plotlyKey);
 
+const express = require('express');
+const app = express();
+app.listen(3000);
+app.get('/', (req, res) => {
+    res.send('Hello World!');
+    res.render('../views/App');
+});
+app.post('/', function (req, res) {
+    res.send('Got a POST request');
+});
+
+
 let fileName = 'temp';
 let fileNameConst = 1;
 
@@ -47,6 +59,7 @@ setInterval(averageViewerTime, viewerInterval);
 var prevAvg = 0;
 var currAvg = 0;
 var maxAvg = 0;
+
 
 function getAverage() {
     prevAvg = currAvg;
@@ -100,7 +113,7 @@ function onChatHandler(channel, userstate, message,self) {
         //topEmotesHandler()
     }
     if(message === "#opgg") {
-
+        //opggHander()
     }
     if(message === "#viewer") {
         averageViewerTime(channel, userstate);

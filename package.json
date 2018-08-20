@@ -4,13 +4,20 @@
   "description": "Twitch Chatbot",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "client": "cd client && npm start",
+    "server": "nodemon app.js"
   },
   "author": "YaHeng Su",
   "license": "ISC",
   "dependencies": {
+    "express": "^4.16.3",
     "plotly": "^1.0.6",
+    "plotly.js": "^1.40.0",
     "plotly.js-dist": "^1.39.2",
+    "react": "^16.4.2",
+    "react-dom": "^16.4.2",
+    "react-plotly.js": "^2.2.0",
     "request": "^2.88.0",
     "request-promise-native": "^1.0.5",
     "tmi.js": "^1.2.1"
