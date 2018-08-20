@@ -26,7 +26,7 @@ var client = new tmi.client(options);
 var avgViewerTime = 0;
 var channelViewers = {};
 var totalTime = 0;
-var totalViewers = 0;
+var intervals = 0;
 
 var intervalMessages = 0;
 let spikeConstant = 2.5;
@@ -220,7 +220,6 @@ function averageViewerTime() {
                     channelViewers[viewer] = 0; 
                 }
             });
-            console.log(channelViewers);
             let totalViewers = Object.keys(channelViewers).length;
             console.log(Object.keys(channelViewers).length);
             Object.keys(channelViewers).forEach((key) => {
@@ -231,7 +230,10 @@ function averageViewerTime() {
                 avgViewerTime = Number(totalTime/totalViewers);
                 console.log(avgViewerTime);
             }
+            totalTime = 0;
+            intervals++;
             console.log(`Average Viewer Time (s) : ${avgViewerTime}`);
+            console.log(`Max Viewer Time (s) ${intervals * viewerInterval/1000}`);
         });
     // });
 }
