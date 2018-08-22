@@ -3,6 +3,8 @@ var fs = require('fs');
 var constants = require('./constants.js');
 var requests = require("./requests.js");
 var plotly = require("plotly")(constants.plotlyUser, constants.plotlyKey);
+var emotes = JSON.parse(fs.readFileSync('global','utf8'));
+var bttvEmotes = JSON.parse(fs.readFileSync('bttvemotes', 'utf8'));
 
 const express = require('express');
 const app = express();
@@ -46,16 +48,26 @@ let spikeConstant = 2.5;
 const viewerInterval = 10000;
 const debugInterval = 10000;
 
+//can do chat uniqueness -> percent of unique msgs compared total mgss
 var uniqueChatMessages = 0;
 var totalChatMessages = 0;
 
+
 var newUsers = [];
 
+
 var chatMsgs = [];
-var chatMsgsFrequency = [];
+var chatMsgsPerInterval = [];
+//return top 10 emotes in chat
+var emoteMsgs = {};
+//for copypastas want to do some detection, maybe characters in message has to be at least 12 characters to filter out emotes and low quality spam
+var copypastas = {};
 setInterval(getAverage, 8000);
 setInterval(debugLog, debugInterval);
 setInterval(averageViewerTime, viewerInterval);
+setInterval(() => {
+    chatMsgsPerInterval = [];
+}, 8000);
 
 var prevAvg = 0;
 var currAvg = 0;
@@ -84,6 +96,22 @@ function debugLog() {
 }
 
 
+/* 
+    question of what we want to plot
+        - uniqueness of chat over time
+        - average chat msgs over time
+        - average viewer time over time 
+        - average emote usage over time 
+        - total chat msgs over time 
+
+    other non plotable things that should be included on dashboard
+        - top copypastas (maybe top 5) + number of times spammed
+        - top emotes + number of times used
+        - twitch chat embedded on the side
+
+
+*/
+
 
 //trimmed mean = take middle 80% values and forget about top/bottom 10%
 
@@ -94,7 +122,46 @@ client.on("chat", onChatHandler);
 
 function onChatHandler(channel, userstate, message,self) {
     if (self) return;
-  
+    
+    //storage of chat msgs for chat analysis
+    chatMsgsPerInterval.push(message);
+    chatMsgs.forEach((element) => {
+        if (element.message == message) {
+            element.count++;
+        }
+    });
+    if(chatMsgs.includes(message)) {
+        chatMsgs[message] += 1;
+    }
+    else {
+       chatMsgs[message] = 1;
+       uniqueChatMessages++;
+    }
+    intervalMessages++;
+
+    //copypasta checker and data entry
+    if(isCopypasta(message)) {
+        if(copypastas.hasOwnProperty(message)){
+            copypastas[message] += 1;
+        }
+        else {
+            copypastas[message] = 1;
+        }
+    }
+    //emote checker and data entry
+    for(var key in emotes) {
+        if(message.includes(key)) {
+            if(emoteMsgs.hasOwnProperty(key)){
+                emoteMsgs[key] += 1;
+            }
+            else {
+                emoteMsgs[key] = 1;
+            }
+        }
+    }
+
+
+    //commands
     if(message === "#followage") {
         followageDateHandler(channel, userstate);
     }
@@ -104,7 +171,7 @@ function onChatHandler(channel, userstate, message,self) {
     if(message === "#title") {
         streamTitleHandler(channel, userstate);
     }
-    if(message === "#blackfr0st" && channel === "#yasung") {
+    if(message === "#blackfr0st") {
         client.say(channel, "https://imgur.com/0I3W6fQ");
     }
     if(message === "#copypasta") {
@@ -119,19 +186,7 @@ function onChatHandler(channel, userstate, message,self) {
     if(message === "#viewer") {
         averageViewerTime(channel, userstate);
     }
-    chatMsgs.forEach((element) => {
-        if (element.message == message) {
-            element.count++;
-        }
-    });
-    if(chatMsgs.includes()) {
-        chatMsgs[message] += 1;
-    }
-    else {
-       chatMsgs[message] = 1;
-       uniqueChatMessages++;
-    }
-    intervalMessages++;
+    
 } 
 
 function followageDateHandler(channel, userstate) {
@@ -185,6 +240,11 @@ function streamTitleHandler(channel, userstate) {
 }
 
 
+function copypastasHandler(channel, message) {
+
+}
+
+
 
 client.on("join", onJoinHandler);
 
@@ -193,9 +253,6 @@ function onJoinHandler(channel, username, self) {
     newUsers.push(username)
 }
 
-client.on("logon", () => {
-    // Do your stuff.
-});
 
 client.on("disconnected", (reason) => {
    console.log(`Disconnected: ${reason}`);
@@ -213,8 +270,9 @@ function handleHotspot() {
 
 /*https://tmi.twitch.tv/group/user/USERNAME/chatters
     For getting average viewer looktime 
-    if user is in object and not in whitelist, add minute to their time every minute 
+    if user is in object, add minute to their time every minute 
     if user is not in object, then add them to object with initial value of 0 
+    only looks at viewers and not moderators, bots, twitch admin, etc
     if object,hasOwnProperty(username)
         object.username += 0.1
         total viewer watch time / viewers
@@ -252,6 +310,17 @@ function averageViewerTime() {
     // });
 }
 
+
+function isCopypasta(message) {
+    if(message.length >= 12) {
+        if(chatMsgsPerInterval.includes(message)){
+            return true;
+        }
+    }
+    else {
+        return false;
+    }
+}
 function writeToFile(fileName, data) {
     fs.writeFile(fileName, data, function(err){
         if (err) console.log(err);
