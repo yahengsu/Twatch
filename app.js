@@ -3,21 +3,21 @@ var fs = require('fs');
 var constants = require('./constants.js');
 var requests = require("./requests.js");
 var plotly = require("plotly")(constants.plotlyUser, constants.plotlyKey);
-var emotes = JSON.parse(fs.readFileSync('global','utf8'));
-var bttvEmotes = JSON.parse(fs.readFileSync('bttvemotes', 'utf8'));
+var emotes = JSON.parse(fs.readFileSync('global.json','utf8'));
+var bttvEmotes = JSON.parse(fs.readFileSync('bttvemotes.json', 'utf8'));
 
-const express = require('express');
-const app = express();
-const port = process.env.PORT || 5000;
-app.listen(port, () => console.log(`Listening on port ${port}`));
+// const express = require('express');
+// const app = express();
+// const port = process.env.PORT || 5000;
+// app.listen(port, () => console.log(`Listening on port ${port}`));
 
-app.get('/', (req, res) => {
-    res.send('Hello World!');
-    res.render('../views/App');
-});
-app.get('/api/hello', (req, res) => {
-    res.send({ express: 'Hello From Express' });
-  });
+// app.get('/', (req, res) => {
+//     res.send('Hello World!');
+//     res.render('../views/App');
+// });
+// app.get('/api/hello', (req, res) => {
+//     res.send({ express: 'Hello From Express' });
+//   });
 
 let fileName = 'temp';
 let fileNameConst = 1;
@@ -62,12 +62,14 @@ var chatMsgsPerInterval = [];
 var emoteMsgs = {};
 //for copypastas want to do some detection, maybe characters in message has to be at least 12 characters to filter out emotes and low quality spam
 var copypastas = {};
+
+
 setInterval(getAverage, 8000);
 setInterval(debugLog, debugInterval);
 setInterval(averageViewerTime, viewerInterval);
 setInterval(() => {
     chatMsgsPerInterval = [];
-}, 8000);
+}, 9000);
 
 var prevAvg = 0;
 var currAvg = 0;
@@ -90,7 +92,10 @@ function getAverage() {
 function debugLog() {
     console.log("prevAvg: " + prevAvg + " currAvg: " + currAvg + " maxAvg: " + maxAvg);
     console.log("totalMsgs: " + totalChatMessages + " uniqueMsgs: " + uniqueChatMessages);
-    console.log(chatMsgs);
+    console.log(`chatMsgsPerInterval: ${chatMsgsPerInterval}`);
+    console.log(`emoteMsgs: ${JSON.stringify(emoteMsgs)}`);
+    console.log(`copypastas: ${JSON.stringify(copypastas)}`);
+
     //writeToFile(fileName + fileNameConst + ".txt", chatMessagesRaw)
     // fileNameConst++;
 }
@@ -113,17 +118,22 @@ function debugLog() {
 */
 
 
-//trimmed mean = take middle 80% values and forget about top/bottom 10%
-
 // Connect the client to the server..
-client.connect();
+client.connect().then(function(data) {
+    console.log(`CONNECTED: ${data}`);
+}).catch(function(err) {
+    console.log(err);
+});
 
 client.on("chat", onChatHandler);
+client.on("join", onJoinHandler);
+
+
 
 function onChatHandler(channel, userstate, message,self) {
     if (self) return;
-    
     //storage of chat msgs for chat analysis
+    console.log(message);
     chatMsgsPerInterval.push(message);
     chatMsgs.forEach((element) => {
         if (element.message == message) {
@@ -149,17 +159,9 @@ function onChatHandler(channel, userstate, message,self) {
         }
     }
     //emote checker and data entry
-    for(var key in emotes) {
-        if(message.includes(key)) {
-            if(emoteMsgs.hasOwnProperty(key)){
-                emoteMsgs[key] += 1;
-            }
-            else {
-                emoteMsgs[key] = 1;
-            }
-        }
-    }
-
+    Object.keys(emotes).forEach((key) => {
+        console.log(key);
+    });
 
     //commands
     if(message === "#followage") {
@@ -205,7 +207,6 @@ function followageDateHandler(channel, userstate) {
             client.say(channel, prefix + userstate.username + " has been following " + channel.substring(1) + " for " + daysFloored + " days and " + hours + " hours!");
         }
     });
-    
 }
 
 function uptimeHandler(channel, userstate) {
@@ -241,22 +242,22 @@ function streamTitleHandler(channel, userstate) {
 
 
 function copypastasHandler(channel, message) {
-
+    
 }
 
+client.on("disconnected", (reason) => {
+    console.log(`Disconnected: ${reason}`);
+});
+client.on("connected", function (address, port) {
+    console.log("connected");
+});
 
-
-client.on("join", onJoinHandler);
 
 function onJoinHandler(channel, username, self) {
     console.log(`${username} has joined the channel`);
     newUsers.push(username)
 }
 
-
-client.on("disconnected", (reason) => {
-   console.log(`Disconnected: ${reason}`);
-});
 
 function emoteGraph() {
     
@@ -281,7 +282,6 @@ function handleHotspot() {
 
 function averageViewerTime() {
     var channel  = "#imaqtpie";
-    // channels.forEach(channel => { // iterate through channels array 
         requests.getViewerList(channel, (res) => {
             var viewerList = res.chatters.viewers; //get viewerlist
             viewerList.forEach((viewer) => {
@@ -293,14 +293,11 @@ function averageViewerTime() {
                 }
             });
             let totalViewers = Object.keys(channelViewers).length;
-            console.log(Object.keys(channelViewers).length);
             Object.keys(channelViewers).forEach((key) => {
                 totalTime += Number(channelViewers[key]);
             });
-            console.log(totalTime);
             if(totalTime !== 0) {
                 avgViewerTime = Number(totalTime/totalViewers);
-                console.log(avgViewerTime);
             }
             totalTime = 0;
             intervals++;
