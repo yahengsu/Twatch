@@ -6,18 +6,22 @@ var plotly = require("plotly")(constants.plotlyUser, constants.plotlyKey);
 var emotes = JSON.parse(fs.readFileSync('global.json','utf8'));
 var bttvEmotes = JSON.parse(fs.readFileSync('bttvemotes.json', 'utf8'));
 
-// const express = require('express');
-// const app = express();
-// const port = process.env.PORT || 5000;
-// app.listen(port, () => console.log(`Listening on port ${port}`));
+const express = require('express');
+const app = express();
+const port = process.env.PORT || 5000;
+app.listen(port, () => console.log(`Listening on port ${port}`));
 
-// app.get('/', (req, res) => {
-//     res.send('Hello World!');
-//     res.render('../views/App');
-// });
-// app.get('/api/hello', (req, res) => {
-//     res.send({ express: 'Hello From Express' });
-//   });
+app.get('/', (req, res) => {
+    res.send('Hello World!');
+    res.render('../views/App');
+});
+app.get('/api/hello', (req, res) => {
+    res.send({ express: 'Hello From Express' });
+});
+
+app.post('/api/graph', (req, res) => {
+    
+});
 
 let fileName = 'temp';
 let fileNameConst = 1;
@@ -94,7 +98,7 @@ function debugLog() {
     console.log("totalMsgs: " + totalChatMessages + " uniqueMsgs: " + uniqueChatMessages);
     console.log(`chatMsgsPerInterval: ${chatMsgsPerInterval}`);
     console.log(`emoteMsgs: ${JSON.stringify(emoteMsgs)}`);
-    console.log(`copypastas: ${JSON.stringify(copypastas)}`);
+    console.log(`copypastas: ${copypastas}`);
 
     //writeToFile(fileName + fileNameConst + ".txt", chatMessagesRaw)
     // fileNameConst++;
@@ -103,8 +107,8 @@ function debugLog() {
 
 /* 
     question of what we want to plot
-        - uniqueness of chat over time
-        - average chat msgs over time
+        - uniqueness of chat over time -> uniqueMsgs/totalMsgs * 100
+        - average chat msgs over time -> totalMsgs / 100
         - average viewer time over time 
         - average emote usage over time 
         - total chat msgs over time 
@@ -133,7 +137,6 @@ client.on("join", onJoinHandler);
 function onChatHandler(channel, userstate, message,self) {
     if (self) return;
     //storage of chat msgs for chat analysis
-    console.log(message);
     chatMsgsPerInterval.push(message);
     chatMsgs.forEach((element) => {
         if (element.message == message) {
@@ -160,8 +163,25 @@ function onChatHandler(channel, userstate, message,self) {
     }
     //emote checker and data entry
     Object.keys(emotes).forEach((key) => {
-        console.log(key);
+        if(message.includes(key)) {
+            if(emoteMsgs.hasOwnProperty(key)) {
+                emoteMsgs[key] += 1;
+            }
+            else {
+                emoteMsgs[key] = 1;
+            }
+        }
     });
+    Object.keys(bttvEmotes).forEach((key) => {
+        if(message.includes(key)) {
+            if(emoteMsgs.hasOwnProperty(key)) {
+                emoteMsgs[key] += 1;
+            }
+            else {
+                emoteMsgs[key] = 1;
+            }
+        }
+    })
 
     //commands
     if(message === "#followage") {
