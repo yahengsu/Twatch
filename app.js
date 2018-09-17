@@ -19,8 +19,10 @@ app.get('/api/hello', (req, res) => {
     res.send({ express: 'Hello From Express' });
 });
 
-app.post('/api/graph', (req, res) => {
-    
+app.get('/api/graph', (req, res) => {
+    res.send({
+
+    });
 });
 
 let fileName = 'temp';
@@ -71,9 +73,7 @@ var copypastas = {};
 setInterval(getAverage, 8000);
 setInterval(debugLog, debugInterval);
 setInterval(averageViewerTime, viewerInterval);
-setInterval(() => {
-    chatMsgsPerInterval = [];
-}, 9000);
+
 
 var prevAvg = 0;
 var currAvg = 0;
@@ -96,15 +96,14 @@ function getAverage() {
 function debugLog() {
     console.log("prevAvg: " + prevAvg + " currAvg: " + currAvg + " maxAvg: " + maxAvg);
     console.log("totalMsgs: " + totalChatMessages + " uniqueMsgs: " + uniqueChatMessages);
-    console.log(`chatMsgsPerInterval: ${chatMsgsPerInterval}`);
     console.log(`emoteMsgs: ${JSON.stringify(emoteMsgs)}`);
-    console.log(`copypastas: ${copypastas}`);
+    console.log(`copypastas: ${JSON.stringify(copypastas)}`);
 
     //writeToFile(fileName + fileNameConst + ".txt", chatMessagesRaw)
     // fileNameConst++;
 }
 
-
+var uniqueness
 /* 
     question of what we want to plot
         - uniqueness of chat over time -> uniqueMsgs/totalMsgs * 100
@@ -208,6 +207,9 @@ function onChatHandler(channel, userstate, message,self) {
     if(message === "#viewer") {
         averageViewerTime(channel, userstate);
     }
+    if(message === "#viewers") {
+        //viewersHandler();
+    }
     
 } 
 
@@ -260,9 +262,14 @@ function streamTitleHandler(channel, userstate) {
     });
 }
 
-
-function copypastasHandler(channel, message) {
+function topEmotesHandler() {
+    //sort emotes
+    //return top 10
     
+}
+function copypastasHandler(channel, message) {
+    //sort copypastas
+    //return top 10
 }
 
 client.on("disconnected", (reason) => {

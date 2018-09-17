@@ -1,9 +1,13 @@
 import React, { Component } from 'react';
-import logo from './logo.svg';
 import './App.css';
 import Plot from 'react-plotly.js';
 
+function handleClick(e) {
+  e.preventDefault()
+  console.log("TEST")
+}
 
+var graphs = [""]
 class App extends Component {
   constructor(props) {
     super(props)
@@ -18,14 +22,15 @@ class App extends Component {
 }
  
 
+
   componentDidMount() {
-    this.callApi()
+    this.callApi('/api/hello')
       .then(res => this.setState({ response: res.express }))
       .catch(err => console.log(err));
   }
 
-  callApi = async () => {
-    const response = await fetch('/api/hello')
+  callApi = async (route) => {
+    const response = await fetch(route)
     const body = await response.json()
     console.log(body)
     console.log(response)
@@ -37,14 +42,9 @@ class App extends Component {
 
   render() {
     return (
-      <div>
         <div className="App">
-          <header className="App-header">
-            <img src={logo} className="App-logo" alt="logo" />
-            <h1 className="App-title">Welcome to React</h1>
-          </header>
-          <p className="App-intro">{this.state.response}</p>
-        </div>
+        <button onClick={handleClick}>PREVIOUS</button>
+        <button onClick={handleClick}>NEXT</button>
         <div className="Plot">
         <Plot
                 data={this.state.data}
