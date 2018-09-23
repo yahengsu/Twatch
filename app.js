@@ -7,21 +7,133 @@ var emotes = JSON.parse(fs.readFileSync('global.json','utf8'));
 var bttvEmotes = JSON.parse(fs.readFileSync('bttvemotes.json', 'utf8'));
 
 const express = require('express');
+const routes = require('./routes');
 const app = express();
 const port = process.env.PORT || 5000;
+
+var appDate = new Date();
+
 app.listen(port, () => console.log(`Listening on port ${port}`));
+
+app.get('/', (req, res) => {
+    res.status(200).json({ message: 'Connected!' });
+  });
 
 app.get('/', (req, res) => {
     res.send('Hello World!');
     res.render('../views/App');
 });
-app.get('/api/hello', (req, res) => {
-    res.send({ express: 'Hello From Express' });
+app.get('/graphs/0', (req, res) => {
+    res.send({
+        data: [
+            {  
+                x: timeValues,
+                y: avgChatMsgs,
+                type: 'scatter',
+                mode: 'line+points',
+                marker: {color: 'blue'}
+            }
+        ],
+        layout: {
+            title: 'Average Chat Messages per second',
+            xaxis: {title: 'Time (H:M)'},
+            yaxis: {title: 'Messages per second '}
+        }
+    });
 });
 
-app.get('/api/graph', (req, res) => {
+app.get('/graphs/1', (req, res) => {
     res.send({
+        data: [
+            {  
+                x: timeValues,
+                y: avgViewTime,
+                type: 'scatter',
+                mode: 'line+points',
+                marker: {color: 'blue'}
+            }
+        ],
+        layout: {
+            title: 'Average viewer view time',
+            xaxis: {title: 'Time (H:M)'},
+            yaxis: {title: 'Time (H:M)'}
+        }
+    });
+    
+});
 
+app.get('/graphs/2', (req, res) => {
+    res.send({
+        data: [
+            {  
+                x: timeValues,
+                y: chatSpikes,
+                type: 'scatter',
+                mode: 'line+points',
+                marker: {color: 'blue'}
+            }
+        ],
+        layout: {
+            title: 'Chat spikes (Chat msgs/second in interval > 2.5x avg chat msgs/second)',
+            xaxis: {title: 'Time (H:M)'},
+            yaxis: {title: 'Time (H:M)'}
+        }
+    });
+});
+
+app.get('/graphs/3', (req, res) => {
+    res.send({
+        data: [
+            {  
+                x: timeValues,
+                y: emoteUsage,
+                type: 'scatter',
+                mode: 'line+points',
+                marker: {color: 'blue'}
+            }
+        ],
+        layout: {
+            title: 'Emote Usage',
+            xaxis: {title: 'Time (H:M)'},
+            yaxis: {title: 'Time (H:M)'}
+        }
+    });
+});
+
+app.get('/graphs/4', (req, res) => {
+    res.send({
+        data: [
+            {  
+                x: timeValues,
+                y: uniqueness,
+                type: 'scatter',
+                mode: 'line+points',
+                marker: {color: 'blue'}
+            }
+        ],
+        layout: {
+            title: 'Chat uniqueness',
+            xaxis: {title: 'Time (H:M)'},
+            yaxis: {title: 'Time (H:M)'}
+        }
+    });
+});
+app.get('/graphs/5', (req, res) => {
+    res.send({
+        data: [
+            {  
+                x: timeValues,
+                y: totalChatMessages,
+                type: 'scatter',
+                mode: 'line+points',
+                marker: {color: 'blue'}
+            }
+        ],
+        layout: {
+            title: 'Total Chat messages',
+            xaxis: {title: 'Time (H:M)'},
+            yaxis: {title: 'Time (H:M)'}
+        }
     });
 });
 
@@ -44,11 +156,14 @@ var options = {
 
 var client = new tmi.client(options);
 
+var prevAvg = 0;
+var currAvg = 0;
+var maxAvg = 0;
 var avgViewerTime = 0;
 var channelViewers = {};
 var totalTime = 0;
 var intervals = 0;
-
+var numEmotes = 0;
 var intervalMessages = 0;
 let spikeConstant = 2.5;
 const viewerInterval = 10000;
@@ -57,10 +172,23 @@ const debugInterval = 10000;
 //can do chat uniqueness -> percent of unique msgs compared total mgss
 var uniqueChatMessages = 0;
 var totalChatMessages = 0;
-
-
+var timeValues = []; // x axis
+var uniqueness = []; //  4
+var avgChatMsgs = []; // 0
+var avgViewTime = []; // 1
+var totalChatMsgs = []; // 5
+var emoteUsage = []; // 3
+var chatSpikes = [] // 2
 var newUsers = [];
 
+function updateData() {
+    avgChatMsgs.push(currAvg);
+    var unique = uniqueChatMessages / totalChatMessages;
+    uniqueness.push(unique);
+    avgViewTime.push(avgViewerTime);
+    totalChatMsgs.push(totalChatMessages);
+    emoteUsage.push(numEmotes);
+}
 
 var chatMsgs = [];
 var chatMsgsPerInterval = [];
@@ -69,17 +197,24 @@ var emoteMsgs = {};
 //for copypastas want to do some detection, maybe characters in message has to be at least 12 characters to filter out emotes and low quality spam
 var copypastas = {};
 
-
-setInterval(getAverage, 8000);
+var dataInterval = 5000;
+setInterval(getAverage, debugInterval);
 setInterval(debugLog, debugInterval);
 setInterval(averageViewerTime, viewerInterval);
+setInterval(updateData, dataInterval);
+setInterval(updateTimeData, dataInterval);
 
 
-var prevAvg = 0;
-var currAvg = 0;
-var maxAvg = 0;
+function updateTimeData() {
+    var currDate = new Date();
+    var difference = (appDate.getTime() - currDate.getTime()) / 1000;
+    var hours = difference /60/60;
+    var hoursFloored = Math.floor(hours);
+    var minutes = Math.round((hours - hoursFloored) * 60);
+    var value = hoursFloored + ":" + minutes;
+    timeValues.push(value);
 
-
+}
 function getAverage() {
     prevAvg = currAvg;
     currAvg = intervalMessages/5;
@@ -87,7 +222,7 @@ function getAverage() {
         maxAvg = currAvg;
     }
     if((currAvg/spikeConstant) > prevAvg) {
-        handleHotspot();
+        chatSpikes.push(currAvg);
     }
     intervalMessages = 0;
 }
@@ -96,14 +231,9 @@ function getAverage() {
 function debugLog() {
     console.log("prevAvg: " + prevAvg + " currAvg: " + currAvg + " maxAvg: " + maxAvg);
     console.log("totalMsgs: " + totalChatMessages + " uniqueMsgs: " + uniqueChatMessages);
-    console.log(`emoteMsgs: ${JSON.stringify(emoteMsgs)}`);
-    console.log(`copypastas: ${JSON.stringify(copypastas)}`);
-
-    //writeToFile(fileName + fileNameConst + ".txt", chatMessagesRaw)
-    // fileNameConst++;
+   // console.log(`emoteMsgs: ${JSON.stringify(emoteMsgs)}`);
+   // console.log(`copypastas: ${JSON.stringify(copypastas)}`)
 }
-
-var uniqueness
 /* 
     question of what we want to plot
         - uniqueness of chat over time -> uniqueMsgs/totalMsgs * 100
@@ -116,6 +246,7 @@ var uniqueness
         - top copypastas (maybe top 5) + number of times spammed
         - top emotes + number of times used
         - twitch chat embedded on the side
+        - max avg chat activity
 
 
 */
@@ -169,6 +300,7 @@ function onChatHandler(channel, userstate, message,self) {
             else {
                 emoteMsgs[key] = 1;
             }
+            numEmotes++;
         }
     });
     Object.keys(bttvEmotes).forEach((key) => {
@@ -179,6 +311,7 @@ function onChatHandler(channel, userstate, message,self) {
             else {
                 emoteMsgs[key] = 1;
             }
+            numEmotes++;
         }
     })
 
