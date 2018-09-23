@@ -8,13 +8,20 @@ Twatch is a Twitch Chat Bot made with Node.js and React. It features insightful 
 ## What can it do?
 
 Twatch offers the following chat commands:
+
 ```#followage``` : 
+
 ```#uptime``` : 
+
 ```#title``` : 
+
 ```#viewers``` : 
 
+
 And will potentially support the following commands in the future:
+
 ```#opgg``` : 
+
 ```#viewtime``` : 
 
 
