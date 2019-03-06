@@ -29,6 +29,8 @@ function insertChannel(channel) {
         console.log(res);
     });
 }
+
+
 module.exports = {
     connect: connect,
     db: db,
