@@ -47,9 +47,6 @@ function onMessage(chan, userstate, message, self) {
     if (msg === "#clear") {
         clearChatHandler(channel);
     }
-    if (msg === "#emotes") {
-        emoteModeHandler(channel);
-    }
     if (msg === "#help") {
         const message = `gist.github.com`;
         client.say(channel, message);
