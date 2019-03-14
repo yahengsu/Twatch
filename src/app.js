@@ -136,7 +136,9 @@ function clearChatHandler(channel) {
 
 
 function twitchClipHandler(channel) {
-
+    const url = await requests.twitchClipHandler(channel);
+    const msg = "";
+    client.say(channel, msg);
 }
 
 

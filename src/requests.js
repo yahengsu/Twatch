@@ -134,8 +134,8 @@ async function twitchClipHandler(channel) {
             const clip_id = res.data[0].id;
             const edit_link = res.data[0].edit_url;
             await sleep(1000);
-            const getClip = await getClip(clip_id);
-
+            const clip = await getTwitchClip(clip_id);
+            return clip.url;
         }
     }
     catch(e) {
@@ -149,6 +149,13 @@ async function getTwitchClip(clip_id) {
     try {
         const response = await axios.get(url, twitchHeader);
         const res = await response.data;
+        if(res.data === undefined || res.data.length == 0) {
+            return -1;
+        }
+        else if(res.data !== undefined && res.data[0].url !== undefined) {
+            const clip = res.data[0];
+            return clip;
+        }
     }
     catch(e) {
         commonCatch(e);
@@ -219,7 +226,11 @@ function commonCatch(e) {
 }
 
 
-
+function validResponse(res) {
+    if (res.data !== undefined) {
+        return true;
+    }
+}
 
 
 module.exports = {
