@@ -1,5 +1,4 @@
-# Twatch - A Twitch.tv Chat Bot 
-
+# Twatch - A Twitch.tv Chat Bot
 
 ## Introduction
 
@@ -20,6 +19,7 @@ Command              | Description
 `!prime`             | Displays a Twitch Prime advertisement message.
 `!rank SUMMONER_NAME`| Retrieves the rank of the summoner using the Riot Games API and displays it in chat.
 `!opgg SUMMONER_NAME`| Returns a link to the summoner's op.gg profile.
+`!addchannel CHANNEL_NAME`| Adds the bot to the specified channel.
 
 ## Messages On A Scheduled Interval
 
@@ -33,19 +33,30 @@ Currently, the only messages that will loop repeatedly are:
 
 ## Custom Commands
 
-CURRENTLY BROKEN 
+CURRENTLY BROKEN
 
 Custom commands can be set by using the following schema:
 
 `!cmd OPERATION ARGS`
 
-Where `OPERATION` is one of `add`, `edit`, `remove`, and `ARGS` depends on the type of operation.
+Where `OPERATION` is one of `add`, or, `remove`, and `ARGS` depends on the type of operation. Custom commands can only be set by either the broadcaster or an `allowedUser`.
 
 OPERATION | ARGS | EXAMPLE
 --- | --- | ---
 ADD | `identifier message` | `!cmd add rng Just get the better team 4Head`
 REMOVE | `identifier` | `!cmd remove rng`
 EDIT | `identifier updatedMessage` | `!cmd edit rng Never luck MonkaS`
+
+## Configuration
+
+There are also some commands that broadcasters and moderators can use to customize their bot experience.
+
+COMMAND | DESCRIPTION |
+--- | ---
+`!adduser USERNAME` | Adds the specified user to the `allowedUsers` list. `allowedUsers` have elevated bot permissions, and can manage custom commands for the channel. Can only be used by the broadcaster.
+`!removeuser USERNAME` | Removes the specified user from the `allowedUsers` list. Can only be used by the broadcaster.
+`!listall` | Returns a space-separated string of all of the custom commands that have been created. eg. `!command1 !command2 !command3`
+
 
 ## Todo/Future Features
 

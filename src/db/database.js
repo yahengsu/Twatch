@@ -1,38 +1,51 @@
 const MongoClient = require('mongodb').MongoClient;
+const url = "mongodb+srv://user1:user1@twatch-wpnwy.mongodb.net/test?retryWrites=true";
+const dbName = "channels";
 
-var _db;
+var database;
 
 function connect(callback) {
-    MongoClient.connect('mongodb://localhost:27017/channels', {useNewUrlParser: true}, (err, db) => {
-        _db = db;
+    MongoClient.connect(url, {useNewUrlParser: true}, (err, res) => {
+        const db = res.db(dbName);
+        database = db;
         return callback(err);
-    });
+    })
 }
 
-function db() {
-    return _db;
+function getDB() {
+    return database;
 }
 
-function insertChannel(channel) {
-    console.log("INSERT CHANNEL");
-    var channelObj = {
+function addChannel(channel) {
+    const channelObj = {
         channel: channel,
-        allowedUsers: [],
+        allowedUsers: [`${channel}`],
         commands: {}
     }
 
-    _db.collection("channels").insertOne(channelObj, (err, res) => {
+    database.collection("channels").insertOne(channelObj, (err, res) => {
         if (err) {
             throw err;
         }
-        console.log("DOCUMENT INSERTED");
-        console.log(res);
+        console.log("Document inserted for user: " + channel);
     });
 }
 
+function addCommand(channel, command) {
+
+}
+
+function editCommand(channel, command) {
+
+}
+
+function removeCommand(channel, command)
 
 module.exports = {
     connect: connect,
-    db: db,
-    insertChannel: insertChannel
+    db: getDB,
+    addChannel: addChannel,
+    addCommand: addCommand,
+    editCommand: editCommand,
+    removeCommand: removeCommand
 }

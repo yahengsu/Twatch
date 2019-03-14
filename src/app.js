@@ -2,18 +2,18 @@ const tmi = require("tmi.js");
 const vars = require("./variables");
 const requests = require("./requests");
 const client = new tmi.client(vars.tmi);
-const MongoClient = require('mongodb').MongoClient;
-const url = "mongodb://localhost:27017/channels";
-var channels;
-MongoClient.connect(url, {useNewUrlParser: true}, (err, db) => {
-    if (err) {
+const mongo = require('./db/database');
+
+mongo.connect((err) => {
+    if(err) {
         throw err;
     }
-    console.log("Database created");
-    channels = db;
-});
+    else {
+        console.log("Successfully connected to Database");
+        addChannel("Yasung");
+    }
+})
 
-addChannel("Yasung");
 
 client.on("message", onMessage);
 client.on("connected", onConnect);
@@ -23,14 +23,15 @@ function onConnect(add, port) {
     console.log(`connected to ${add}:${port}`);
 }
 
+const prefix = "!";
 const COMMAND_INTERVAL = 900000; // - 15 minute interval
 // const COMMAND_INTERVAL = 1000;
-setInterval(twitchPrimeReminder, COMMAND_INTERVAL);
-setInterval(waterReminder, COMMAND_INTERVAL * 2);
+// setInterval(twitchPrimeReminder, COMMAND_INTERVAL);
+// setInterval(waterReminder, COMMAND_INTERVAL * 2);
 
 //METHOD IS RUN EVERY TIME A NEW MESSAGE IS TYPED IN CHAT
 function onMessage(chan, userstate, message, self) {
-    var channel = chan.substring(1);
+    const channel = chan.substring(1);
     if (self) {
         return;
     }
@@ -38,30 +39,35 @@ function onMessage(chan, userstate, message, self) {
     if (msg === "#title") {
         titleHandler(channel, userstate);
     }
-    if (msg === "#followage") {
+    else if (msg === "#followage") {
         followageHandler(channel, userstate);
     }
-    if (msg === "#uptime") {
+    else if (msg === "#uptime") {
         uptimeHandler(channel, userstate);
     }
-    if (msg === "#clear") {
+    else if (msg === "#clear") {
         clearChatHandler(channel);
     }
-    if (msg === "#help") {
-        const message = `gist.github.com`;
-        client.say(channel, message);
+    else if (msg === "#help") {
+        helpHandler(channel, userstate);
     }
-    if (msg === "#prime") {
+    else if (msg === "#prime") {
         twitchPrimeReminder(channel);
     }
-    if (msg.startsWith("#rank")) {
+    else if (msg.startsWith("#rank")) {
         getRankHandler(channel, userstate, msg);
     }
-    if (msg.startsWith("#cmd")) {
+    else if (msg.startsWith("#cmd")) {
         commandHandler(channel, userstate, msg);
     }
-    if (msg.startsWith("#opgg")) {
+    else if (msg.startsWith("#opgg")) {
         getOPGGHandler(channel, userstate, msg);
+    }
+    else if (msg.startsWith("#addchannel")) {
+        addChannelHandler();
+    }
+    else if (msg.startsWith("#")) {
+        customCommandHandler(channel, userstate, msg);
     }
 }
 
@@ -88,7 +94,7 @@ async function waterReminder(channel) {
 }
 
 function stretchReminder(channel) {
-    const msg = `It's been a while since `;
+    const msg = `A reminder to everyone to get up and stretch every once in a while! Also make sure your posture is `;
 }
 
 /* TWITCH API REQUESTS */
@@ -126,6 +132,12 @@ function clearChatHandler(channel) {
 }
 
 
+//CHAT HELP COMMAND !help
+
+function helpHandler(channel, userstate) {
+    const msg = `@${userstate.username}, command documentation can be found here: https://github.com/yahengsu/Twatch`;
+    client.say(channel, msg);
+}
 
 /* LEAGUE OF LEGENDS API REQUESTS */
 
@@ -144,36 +156,44 @@ function getOPGGHandler(channel, userstate, msg) {
     client.say(channel, link);
 }
 
+// commandHandler("asdf", "123", "!cmd add test this is a test message");
 
 function commandHandler(channel, userstate, msg) {
-    const operation = msg.split(" ")[1];
+    //CHECK IF CHANNEL EXISTS
+    var db = mongo.db();
+    if (db.collection("channels").)
+    //CHECK IF USER IS ALLOWED USER
+    const msgSplit = msg.split(" ");
+    const operation = msgSplit[1];
     if (operation === "add") {
-
+        const id = "!" + msgSplit[2];
+        var message = msgSplit.slice(3).join(" ");
+        mongo.addCommand(channel,id,message);
     }
+    //!cmd edit test this is the new message
     else if (operation === "edit") {
-
+        //edit the command
+        const id = "!" + msgSplit[2];
+        const message = msgSplit.slice(3).join(" ");
+        mongo.editCommand(channel,id,message);
     }
+    //!cmd remove test
     else if (operation === "remove") {
-        
+        //remove the command
+        const id = "!" + msgSplit[2];
+        mongo.removeCommand(channel, id);
     }
-    
+}
+
+
+function customCommandHandler(channel, userstate, msg) {
+
 }
 
 /* DATABSE FUNCTIONS */
 
 function addChannel(channel) {
-    var db = mongo.db();
-
-    var channelObj = {
-        channel: channel,
-        allowedUsers: [],
-        commands: {}
-    }
-    db.collection("channels").insertOne(channelObj, (err, res) => {
-        if (err) {
-            throw err;
-        }
-        console.log(res);
-    });
-    // mongo.insertChannel(channel);
+    console.log(1);
+    mongo.addChannel(channel);
+    console.log(2);
 }
