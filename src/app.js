@@ -54,6 +54,9 @@ function onMessage(chan, userstate, message, self) {
     else if (msg === "#prime") {
         twitchPrimeReminder(channel);
     }
+    else if (msg === "#clip") {
+        twitchClipHandler(channel, userstate);
+    }
     else if (msg.startsWith("#rank")) {
         getRankHandler(channel, userstate, msg);
     }
@@ -132,6 +135,11 @@ function clearChatHandler(channel) {
 }
 
 
+function twitchClipHandler(channel) {
+
+}
+
+
 //CHAT HELP COMMAND !help
 
 function helpHandler(channel, userstate) {
@@ -161,7 +169,7 @@ function getOPGGHandler(channel, userstate, msg) {
 function commandHandler(channel, userstate, msg) {
     //CHECK IF CHANNEL EXISTS
     var db = mongo.db();
-    if (db.collection("channels").)
+    
     //CHECK IF USER IS ALLOWED USER
     const msgSplit = msg.split(" ");
     const operation = msgSplit[1];

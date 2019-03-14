@@ -3,14 +3,16 @@ const vars = require("./variables");
 
 
 /* TWITCH API REQUESTS */
+const twitchHeader = {
+    headers: {
+        "Client-ID": vars.clientID
+    }
+};
 
 async function getTitle(channel, userstate) {
     const url = `https://api.twitch.tv/helix/streams/?user_login=${channel}`;
-    const headers = {
-        "Client-ID": vars.clientID
-    };
     try {
-        const response = await axios.get(url, {headers});
+        const response = await axios.get(url, twitchHeader);
         const res = await response.data;
 
         if(res.data === undefined || res.data.length == 0) {
@@ -45,11 +47,8 @@ async function getFollowage(channel, userstate) {
 
 async function getUptime(channel, userstate) {
     const url = `https://api.twitch.tv/helix/streams?user_login=${channel}`;
-    const headers = {
-        "Client-ID": vars.clientID
-    };
     try {
-        const response = await axios.get(url, {headers});
+        const response = await axios.get(url, twitchHeader);
         const res = await response.data;
         if(res.data === undefined || res.data.length == 0) {
             var notLiveMsg = `@${userstate.username}, ${channel} is currently offline!`;
@@ -74,12 +73,9 @@ async function getUptime(channel, userstate) {
 
 async function waterHandler(channel) {
     const url = `https://api.twitch.tv/helix/streams?user_login=${channel}`;
-    const headers = {
-        "Client-ID": vars.clientID
-    };
     
     try {
-        const response = await axios.get(url, {headers});
+        const response = await axios.get(url, twitchHeader);
         const res = await response.data;
         if(res.data === undefined || res.data.length == 0) {
             return -1;
@@ -102,6 +98,63 @@ async function waterHandler(channel) {
     }
 }
 
+async function getUserID(username) {
+    const url = `https://api.twitch.tv/helix/users?login=${username}`;
+    try {
+        const response = await axios.get(url, twitchHeader);
+        const res = await response.data;
+        if(res.data === undefined || res.data.length == 0) {
+            return -1;
+        }
+        else if(res.data !== undefined && res.data[0].id !== undefined) {
+            const userID = res.data[0].id;
+
+            return userID;
+        }
+    }
+    catch(e) {
+        commonCatch(e);
+    }
+
+}
+
+
+async function twitchClipHandler(channel) {
+    const userID = await getUserID(channel);
+    const url = `https://api.twitch.tv/helix/clips?broadcaster_id=${userID}`;
+
+    try {
+        const response = await axios.get(url, twitchHeader);
+        const res = await response.data;
+
+        if(res.data === undefined || res.data.length == 0) {
+            return -1;
+        }
+        else if(res.data !== undefined && res.data[0].id !== undefined) {
+            const clip_id = res.data[0].id;
+            const edit_link = res.data[0].edit_url;
+            await sleep(1000);
+            const getClip = await getClip(clip_id);
+
+        }
+    }
+    catch(e) {
+        commonCatch(e);
+    }
+}
+
+async function getTwitchClip(clip_id) {
+    const url = `https://api.twitch.tv/helix/clips?id=${clip_id}`;
+
+    try {
+        const response = await axios.get(url, twitchHeader);
+        const res = await response.data;
+    }
+    catch(e) {
+        commonCatch(e);
+    }
+
+}
 
 /* RIOT GAMES API REQUESTS */
 

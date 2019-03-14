@@ -31,15 +31,17 @@ function addChannel(channel) {
     });
 }
 
-function addCommand(channel, command) {
+function addCommand(channel, command, resp) {
 
 }
 
-function editCommand(channel, command) {
+function editCommand(channel, command, resp) {
 
 }
 
-function removeCommand(channel, command)
+function removeCommand(channel, command) {
+    
+}
 
 module.exports = {
     connect: connect,
