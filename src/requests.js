@@ -124,15 +124,17 @@ async function twitchClipHandler(channel) {
     const url = `https://api.twitch.tv/helix/clips?broadcaster_id=${userID}`;
 
     try {
-        const response = await axios.get(url, twitchHeader);
+        const response = await axios.post(url,null,twitchHeader);
         const res = await response.data;
-
         if(res.data === undefined || res.data.length == 0) {
             return -1;
         }
+        else if(res.status == 401) {
+            return -2;
+        }
         else if(res.data !== undefined && res.data[0].id !== undefined) {
+            console.log(res.data);
             const clip_id = res.data[0].id;
-            const edit_link = res.data[0].edit_url;
             await sleep(1000);
             const clip = await getTwitchClip(clip_id);
             return clip.url;
@@ -238,5 +240,7 @@ module.exports = {
     getFollowage: getFollowage, 
     getUptime: getUptime,
     getSummonerRank: getSummonerRank,
-    waterHandler: waterHandler
+    waterHandler: waterHandler,
+    getTwitchClip: getTwitchClip,
+    twitchClipHandler: twitchClipHandler
 };

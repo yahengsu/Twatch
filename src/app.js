@@ -135,9 +135,13 @@ function clearChatHandler(channel) {
 }
 
 
-function twitchClipHandler(channel) {
+async function twitchClipHandler(channel, userstate) {
     const url = await requests.twitchClipHandler(channel);
-    const msg = "";
+    if (url == -2) {
+        const msg = `@${userstate.username}, the clip failed to generate. (401)`;
+        client.say(channel,msg);
+    }
+    const msg = `@${userstate.username}, the clip was successfully generated: ${url}`;
     client.say(channel, msg);
 }
 
@@ -197,7 +201,7 @@ function commandHandler(channel, userstate, msg) {
 
 
 function customCommandHandler(channel, userstate, msg) {
-
+    
 }
 
 /* DATABSE FUNCTIONS */
