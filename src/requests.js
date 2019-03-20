@@ -5,7 +5,8 @@ const vars = require("./variables");
 /* TWITCH API REQUESTS */
 const twitchHeader = {
     headers: {
-        "Client-ID": vars.clientID
+        "Client-ID": vars.clientID,
+        "Authorization": `Bearer ${vars.oauthToken}`
     }
 };
 
@@ -134,10 +135,8 @@ async function twitchClipHandler(channel) {
         }
         else if(res.data !== undefined && res.data[0].id !== undefined) {
             console.log(res.data);
-            const clip_id = res.data[0].id;
-            await sleep(1000);
-            const clip = await getTwitchClip(clip_id);
-            return clip.url;
+            const url = res.data[0].edit_url;
+            return url;
         }
     }
     catch(e) {
