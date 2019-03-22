@@ -1,5 +1,7 @@
 const MongoClient = require('mongodb').MongoClient;
-const url = "mongodb+srv://user1:user1@twatch-wpnwy.mongodb.net/test?retryWrites=true";
+const vars = require("../variables");
+
+const url = vars.dbLink;
 const dbName = "channels";
 
 var database;
