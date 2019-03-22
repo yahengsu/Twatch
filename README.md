@@ -41,7 +41,7 @@ Custom commands can be set by using the following schema:
 
 `!cmd OPERATION ARGS`
 
-Where `OPERATION` is one of `add`, or, `remove`, and `ARGS` depends on the type of operation. Custom commands can only be set by either the broadcaster or an `allowedUser`.
+Where `OPERATION` is one of `add`, or, `remove`, and `ARGS` depends on the type of operation. Custom commands can only be set by either the broadcaster or an `allowedUser`, and the command must be used in the chat room of the broadcaster you want to add these commands to (ex. to add a custom command for `TWITCH_STREAMER_11`, use the `!cmd add` command in `TWITCH_STREAMER_11`'s twitch chat.)
 
 OPERATION | ARGS | EXAMPLE
 --- | --- | ---
@@ -59,10 +59,7 @@ COMMAND | DESCRIPTION |
 `!removeuser USERNAME` | Removes the specified user from the `allowedUsers` list. Can only be used by the broadcaster.
 `!listall` | Returns a space-separated string of all of the custom commands that have been created. eg. `!command1 !command2 !command3`
 
-
 ## Todo/Future Features
 
-- Fix CRUD operations for commands
 - Deploy to hosting service
 - Music integration with Spotify API
-- !clip command

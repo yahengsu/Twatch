@@ -60,11 +60,14 @@ function onMessage(chan, userstate, message, self) {
     else if (msg === "!removechannel") {
         removeChannelHandler(channel, userstate);
     }
+    else if (msg === "!listall") {
+        listAllCommandsHandler(channel, userstate);
+    }
     else if (msg.startsWith("!adduser")) {
         addUserHandler(channel, userstate, msg);
     }
     else if (msg.startsWith("!removeuser")) {
-        addUserHandler(channel, userstate, msg);
+        removeUserHandler(channel, userstate, msg);
     }
     else if (msg.startsWith("!rank")) {
         getRankHandler(channel, userstate, msg);
@@ -295,4 +298,11 @@ async function removeUserHandler(channel, userstate, msg) {
         client.say(channel, msg);
     }
     
+}
+
+async function listAllCommandsHandler(channel, userstate) {
+    const res = await mongo.getCommands(channel);
+    const msg = `@${userstate.username}, commands: ${res}`;
+
+    client.say(channel, msg);
 }

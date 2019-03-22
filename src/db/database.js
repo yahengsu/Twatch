@@ -215,6 +215,20 @@ async function getCommand(channel, command) {
     }
 }
 
+async function getCommands(channel) {
+    try {
+        const chan = await database.collection("channels").findOne({channel: channel});
+        var res = "";
+        Object.keys(chan.commands).map(e => {
+            res += e + ", ";
+        });
+        return res;
+    }
+    catch(err) {
+        console.log(err);
+    }
+}
+
 module.exports = {
     connect: connect,
     db: getDB,
@@ -227,5 +241,6 @@ module.exports = {
     addCommand: addCommand,
     editCommand: editCommand,
     removeCommand: removeCommand,
-    getCommand: getCommand
+    getCommand: getCommand,
+    getCommands: getCommands
 }
