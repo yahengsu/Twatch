@@ -3,27 +3,24 @@ const vars = require("./variables");
 const requests = require("./requests");
 const client = new tmi.client(vars.tmi);
 const mongo = require('./db/database');
-
 mongo.connect((err) => {
     if(err) {
         throw err;
     }
     else {
-        console.log("Successfully connected to Database");
-        addChannel("Yasung");
+        console.log("Successfully connected to Database");     
     }
-})
+});
 
-
+client.connect();
 client.on("message", onMessage);
 client.on("connected", onConnect);
 
-client.connect();
 function onConnect(add, port) {
     console.log(`connected to ${add}:${port}`);
+    
 }
 
-const prefix = "!";
 const COMMAND_INTERVAL = 900000; // - 15 minute interval
 // const COMMAND_INTERVAL = 1000;
 // setInterval(twitchPrimeReminder, COMMAND_INTERVAL);
@@ -36,41 +33,47 @@ function onMessage(chan, userstate, message, self) {
         return;
     }
     const msg = message.trim();
-    if (msg === "#title") {
+    if (msg === "!title") {
         titleHandler(channel, userstate);
     }
-    else if (msg === "#followage") {
+    else if (msg === "!followage") {
         followageHandler(channel, userstate);
     }
-    else if (msg === "#uptime") {
+    else if (msg === "!uptime") {
         uptimeHandler(channel, userstate);
     }
-    else if (msg === "#clear") {
+    else if (msg === "!clear") {
         clearChatHandler(channel);
     }
-    else if (msg === "#help") {
+    else if (msg === "!help") {
         helpHandler(channel, userstate);
     }
-    else if (msg === "#prime") {
+    else if (msg === "!prime") {
         twitchPrimeReminder(channel);
     }
-    else if (msg === "#clip") {
+    else if (msg === "!clip") {
         twitchClipHandler(channel, userstate);
     }
-    else if (msg.startsWith("#rank")) {
+    else if (msg === "!addchannel") {
+        addChannelHandler(channel, userstate);
+    }
+    else if (msg === "!removechannel") {
+        removeChannelHandler(channel, userstate);
+    }
+    else if (msg.startsWith("!adduser")) {
+        addUserHandler(channel, userstate, msg);
+    }
+    else if (msg.startsWith("!rank")) {
         getRankHandler(channel, userstate, msg);
     }
-    else if (msg.startsWith("#cmd")) {
+    else if (msg.startsWith("!cmd")) {
         commandHandler(channel, userstate, msg);
     }
-    else if (msg.startsWith("#opgg")) {
+    else if (msg.startsWith("!opgg")) {
         getOPGGHandler(channel, userstate, msg);
     }
-    else if (msg.startsWith("#addchannel")) {
-        addChannelHandler();
-    }
-    else if (msg.startsWith("#")) {
-        customCommandHandler(channel, userstate, msg);
+    else if (msg.startsWith("!")) {
+        customCommandHandler(channel, msg);
     }
 }
 
@@ -112,8 +115,13 @@ async function titleHandler(channel, userstate) {
 
 //FOLLOWAGE COMMAND !followage
 async function followageHandler(channel, userstate) {
-    const msg = await requests.getFollowage(channel, userstate);
-    client.say(channel,msg);
+    if(channel === userstate.username) {
+        client.say(channel, "Can't check followage of yourself!");
+    }
+    else {
+        const msg = await requests.getFollowage(channel, userstate);
+        client.say(channel, msg);
+    }
 }
 
 //UPTIME COMMAND !uptime
@@ -141,8 +149,11 @@ async function twitchClipHandler(channel, userstate) {
         const msg = `@${userstate.username}, the clip failed to generate. (401)`;
         client.say(channel,msg);
     }
-    const msg = `@${userstate.username}, the clip was successfully generated: ${url}`;
-    client.say(channel, msg);
+    else {
+        const msg = `@${userstate.username}, the clip was successfully generated: ${url}`;
+        client.say(channel, msg);
+
+    }
 }
 
 
@@ -172,42 +183,90 @@ function getOPGGHandler(channel, userstate, msg) {
 
 // commandHandler("asdf", "123", "!cmd add test this is a test message");
 
-function commandHandler(channel, userstate, msg) {
+async function commandHandler(channel, userstate, msg) {
     //CHECK IF CHANNEL EXISTS
-    var db = mongo.db();
-    
-    //CHECK IF USER IS ALLOWED USER
-    const msgSplit = msg.split(" ");
-    const operation = msgSplit[1];
-    if (operation === "add") {
-        const id = "!" + msgSplit[2];
-        var message = msgSplit.slice(3).join(" ");
-        mongo.addCommand(channel,id,message);
+    if(!mongo.getChannel(channel)) {
+        return;
     }
-    //!cmd edit test this is the new message
-    else if (operation === "edit") {
-        //edit the command
-        const id = "!" + msgSplit[2];
-        const message = msgSplit.slice(3).join(" ");
-        mongo.editCommand(channel,id,message);
-    }
-    //!cmd remove test
-    else if (operation === "remove") {
-        //remove the command
-        const id = "!" + msgSplit[2];
-        mongo.removeCommand(channel, id);
-    }
+    else {
+        //allowed user
+        const user = userstate.username;
+        const chan = await mongo.getChannel(channel);
+        if(!chan.allowedUsers.includes(user)) {
+            return;
+        }
+        else {
+            const msgSplit = msg.split(" ");
+            const operation = msgSplit[1];
+            if (operation === "add") {
+                const id = "!" + msgSplit[2];
+                var message = msgSplit.slice(3).join(" ");
+                const resp = await mongo.addCommand(channel,id,message);
+                client.say(channel, resp);
+            }
+            //!cmd edit test this is the new message
+            else if (operation === "edit") {
+                //edit the command
+                const id = "!" + msgSplit[2];
+                const message = msgSplit.slice(3).join(" ");
+                const resp = await mongo.editCommand(channel,id,message);
+                client.say(channel, resp);
+            }
+            //!cmd remove test
+            else if (operation === "remove") {
+                //remove the command
+                const id = "!" + msgSplit[2];
+                const resp = await mongo.removeCommand(channel, id);
+                client.say(channel, resp);
+            }
+        }
+    } 
+   
 }
 
 
-function customCommandHandler(channel, userstate, msg) {
-    
+async function customCommandHandler(channel, msg) {
+    if(!mongo.getChannel(channel)) {
+        return;
+    }
+    else {
+        const chan = await mongo.getChannel(channel);
+        const commands = chan.commands;
+        if(msg in commands) {
+            const reply = commands[msg];
+            client.say(channel, reply);
+        }
+    }
 }
 
 /* DATABSE FUNCTIONS */
 
-function addChannel(channel) {
-    console.log(1);
-    mongo.addChannel(channel);
-    console.log(2);
+async function addChannelHandler(channel, userstate) {
+    if(channel !== "yasungbot") {
+        return;
+    }
+    else {
+        const msg = await mongo.addChannel(userstate.username);
+        client.say(channel, msg);
+    }
+}
+
+async function removeChannelHandler(channel, userstate) {
+    if(channel !== "yasungbot") {
+        return;
+    }
+    else {
+        const msg = await mongo.removeChannel(userstate.username);
+            client.say(channel, msg);
+    }
+}
+
+
+//TODO
+async function addUserHandler(channel, userstate, msg) {
+
+}
+
+async function removeUserHandler(channel, userstate, msg) {
+
 }
