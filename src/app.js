@@ -63,6 +63,9 @@ function onMessage(chan, userstate, message, self) {
     else if (msg.startsWith("!adduser")) {
         addUserHandler(channel, userstate, msg);
     }
+    else if (msg.startsWith("!removeuser")) {
+        addUserHandler(channel, userstate, msg);
+    }
     else if (msg.startsWith("!rank")) {
         getRankHandler(channel, userstate, msg);
     }
@@ -264,9 +267,32 @@ async function removeChannelHandler(channel, userstate) {
 
 //TODO
 async function addUserHandler(channel, userstate, msg) {
-
+    const user = msg.split(" ")[1];
+    if(!mongo.getChannel(channel)) {
+        return;
+    }
+    else {
+        const chan = await mongo.getChannel(channel);
+        if(!chan.allowedUsers.includes(userstate.username)) {
+            return;
+        }
+        const msg = await mongo.addAllowedUser(channel, user);
+        client.say(channel, msg);
+    }
 }
 
 async function removeUserHandler(channel, userstate, msg) {
-
+    const user = msg.split(" ")[1];
+    if(!mongo.getChannel(channel)) {
+        return;
+    }
+    else {
+        const chan = await mongo.getChannel(channel);
+        if(!chan.allowedUsers.includes(userstate.username)) {
+            return;
+        }
+        const msg = await mongo.removeAllowedUser(channel, user);
+        client.say(channel, msg);
+    }
+    
 }
