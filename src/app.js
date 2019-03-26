@@ -22,9 +22,9 @@ function onConnect(add, port) {
 }
 
 const COMMAND_INTERVAL = 900000; // - 15 minute interval
-// const COMMAND_INTERVAL = 1000;
-// setInterval(twitchPrimeReminder, COMMAND_INTERVAL);
-// setInterval(waterReminder, COMMAND_INTERVAL * 2);
+setInterval(twitchPrimeReminder, COMMAND_INTERVAL);
+setInterval(waterReminder, COMMAND_INTERVAL * 2);
+setInterval(stretchReminder, COMMAND_INTERVAL * 4);
 
 //METHOD IS RUN EVERY TIME A NEW MESSAGE IS TYPED IN CHAT
 function onMessage(chan, userstate, message, self) {
@@ -106,7 +106,8 @@ async function waterReminder(channel) {
 }
 
 function stretchReminder(channel) {
-    const msg = `A reminder to everyone to get up and stretch every once in a while! Also make sure your posture is `;
+    const msg = `A reminder to everyone to get up and stretch every once in a while! Take breaks to destress and untilt!`;
+    client.say(channel, msg);
 }
 
 /* TWITCH API REQUESTS */
