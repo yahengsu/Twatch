@@ -35,8 +35,6 @@ Currently, the only messages that will loop repeatedly are:
 
 ## Custom Commands
 
-CURRENTLY BROKEN
-
 Custom commands can be set by using the following schema:
 
 `!cmd OPERATION ARGS`
