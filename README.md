@@ -63,3 +63,4 @@ COMMAND | DESCRIPTION |
 
 - Deploy to hosting service
 - Music integration with Spotify API
+- Do error checking with responses
