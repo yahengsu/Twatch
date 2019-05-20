@@ -2,7 +2,7 @@
 
 ## Introduction
 
-Twatch is a Twitch.tv chat bot made using Node.js. It takes advantage of the Twitch API to provide livestreamers with some useful functionalities, hopefully enchancing the viewer experience and creating a more enjoyable stream.
+Twatch is a Twitch.tv chat bot made using Node.js. It takes advantage of the Twitch API to provide livestreamers with some useful functionalities, hopefully enhancing the viewer experience and creating a more enjoyable stream.
 
 This project was simply an exploration into creating a functional Twitch.tv chatbot, and is not intended for serious use as a livestreaming tool. People looking for a good Twitch chat bot should take a look at alternatives such as [Nightbot](https://beta.nightbot.tv/) and [StreamElements](https://streamelements.com/).
 
