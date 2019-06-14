@@ -21,7 +21,6 @@ function getDB() {
 async function getChannels() {
     try {
         const channels = await database.collection("channels").find({}).toArray();
-
         const pruned = channels.map(e => {
             return e.channel;
         })
@@ -131,19 +130,15 @@ async function removeChannel(channel) {
     catch(err) {
         console.log(err);
     }
-
 }
 
 async function addCommand(channel, command, resp) {
 
     try {
-        console.log(1);
         const user = await database.collection("channels").findOne({channel: channel});
         var doc = user.commands;
         doc[command] = resp;
-        console.log(doc);
         const add = await database.collection("channels").findOneAndUpdate({channel: channel}, {$set: {commands : doc}});
-        console.log(add);
         if(add.ok) {
             const msg = `${command} has been successfully added.`;
             return msg;
@@ -229,6 +224,22 @@ async function getCommands(channel) {
     }
 }
 
+
+async function connectSpotify(channel, spotifyName) {
+    try {
+        const spot = await database.collection("channels").findOneAndUpdate({channel: channel}, {$set: {spotify: spotifyName}});
+
+        if(spot.ok) {
+           return `Spotify has successfully been connected!`;
+        }
+        else {
+            return `Error connecting Spotify account.`
+        }
+    }
+    catch(err){ 
+        console.log(err);
+    }
+}
 module.exports = {
     connect: connect,
     db: getDB,
