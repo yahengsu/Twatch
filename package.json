@@ -4,7 +4,7 @@
   "description": "",
   "main": "app.js",
   "dependencies": {
-    "axios": "^0.18.0",
+    "axios": "^0.18.1",
     "mongodb": "^3.1.13",
     "nodemon": "^1.18.10",
     "tmi.js": "^1.4.2"
