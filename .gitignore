@@ -1,3 +1,4 @@
 node_modules/
 data/
 dummyVariables.js
+src/.env

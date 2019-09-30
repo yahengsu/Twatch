@@ -1,5 +1,6 @@
 const tmi = require("tmi.js");
 const vars = require("./variables");
+const dotenv = require('dotenv').config()
 const requests = require("./requests");
 const client = new tmi.client(vars.tmi);
 const mongo = require('./db/database');

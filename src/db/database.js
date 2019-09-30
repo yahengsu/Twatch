@@ -1,11 +1,12 @@
 const MongoClient = require('mongodb').MongoClient;
 const vars = require("../variables");
 
-const url = vars.dbLink;
+const url = process.env.MONGODB_ATLAS_LINK; // vars.dbLink
 const dbName = "channels";
 
 var database;
 
+const client = new MongoClient(url, {useNewUrlParser: true});
 function connect(callback) {
     MongoClient.connect(url, {useNewUrlParser: true}, (err, res) => {
         const db = res.db(dbName);
