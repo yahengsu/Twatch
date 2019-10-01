@@ -4,8 +4,8 @@ const vars = require("./variables");
 /* TWITCH API REQUESTS */
 const twitchHeader = {
   headers: {
-    "Client-ID": process.env.TWITCH_CLIENT_ID, // vars.clientID
-    Authorization: `Bearer ${process.env.TWITCH_OAUTH_TOKEN}` //vars.oauthToken
+    "Client-ID": vars.clientID,
+    Authorization: `Bearer ${vars.oauthToken}`
   }
 };
 
