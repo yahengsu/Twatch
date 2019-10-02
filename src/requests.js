@@ -32,7 +32,7 @@ async function getFollowage(channel, userstate) {
   try {
     const response = await axios.get(url);
     const res = await response.data;
-    console.log(data);
+    console.log(res);
 
     const msg = `@${res}!`;
     return msg;

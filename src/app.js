@@ -180,8 +180,8 @@ function helpHandler(channel, userstate) {
 
 /* LEAGUE OF LEGENDS API REQUESTS */
 
-async function getRankHandler(channel, userstate, msg) {
-  const summonerName = msg.split(" ")[1];
+async function getRankHandler(channel, userstate, initmsg) {
+  const summonerName = initmsg.split(" ")[1];
   const reply = await requests.getSummonerRank(summonerName);
   const msg = `@${userstate.username}, ${reply}`;
   client
@@ -249,14 +249,14 @@ async function commandHandler(channel, userstate, msg) {
   }
 }
 
-async function customCommandHandler(channel, msg) {
+async function customCommandHandler(channel, initmsg) {
   if (!mongo.getChannel(channel)) {
     return;
   } else {
     const chan = await mongo.getChannel(channel);
     const commands = chan.commands;
-    if (msg in commands) {
-      const msg = commands[msg];
+    if (initmsg in commands) {
+      const msg = commands[initmsg];
       client
         .say(channel, msg)
         .then(channel => console.log(channel))

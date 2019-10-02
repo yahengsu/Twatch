@@ -6,7 +6,8 @@ const dbName = "channels";
 
 var database;
 
-const client = new MongoClient(url, { useNewUrlParser: true });
+const client = new MongoClient(url, { useNewUrlParser: true, useUnifiedTopology: true });
+
 function connect(callback) {
   MongoClient.connect(url, { useNewUrlParser: true }, (err, res) => {
     const db = res.db(dbName);
